@@ -147,12 +147,28 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onAddToC
                 </div>
               </div>
 
+              {/* Features List */}
+              {product.features && product.features.length > 0 && (
+                <div className="mb-6 md:mb-8 border-t border-black/5 pt-6 md:pt-8">
+                  <h3 className="text-[10px] md:text-xs font-black uppercase tracking-widest mb-4">Öne Çıkan Özellikler</h3>
+                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6">
+                    {product.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <div className="mt-1.5 size-1 md:size-1.5 bg-orange-600 shrink-0"></div>
+                        <span className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider leading-relaxed">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Add to Cart Button */}
+
               <button
                 onClick={handleAddToCart}
                 className={`w-full py-4 md:py-5 text-sm md:text-base font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 mb-4 md:mb-6 ${added
-                    ? 'bg-green-600 text-white'
-                    : 'bg-black dark:bg-white text-white dark:text-black hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-black dark:bg-white text-white dark:text-black hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white'
                   }`}
               >
                 <ShoppingBag size={18} className="md:w-5 md:h-5" />

@@ -105,8 +105,32 @@ const Home: React.FC<HomeProps> = ({ products, onSelectProduct }) => {
           ))}
         </div>
       </div>
+      {/* About Us Section */}
+      <div className="bg-orange-600 py-24 px-4 md:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <span className="text-white/80 text-[10px] font-black tracking-[0.4em] uppercase mb-6 block">Hakkımızda</span>
+          <h2 className="text-white text-3xl md:text-5xl font-black mb-10 tracking-tighter uppercase leading-tight">
+            Doğayla Uyumlu,<br />Modern ve Şık Tasarımlar
+          </h2>
+          <div className="space-y-6 text-white/90 text-sm md:text-base font-medium leading-relaxed">
+            <p>
+              Avyna®, İzmir’de bahçe ve dış mekân mobilyaları sektöründe; doğayla uyumlu tasarımları,
+              çağdaş bakış açısı ve yüksek kalite anlayışıyla hizmet vermenin gururunu yaşamaktadır.
+            </p>
+            <p>
+              Her yıl Türkiye’nin ve dünyanın dört bir yanına ulaşan güçlü üretim ve lojistik altyapımız sayesinde;
+              dayanıklılığı, estetiği ve konforu bir arada sunan güvenilir bir marka olarak istikrarlı büyümemizi sürdürüyoruz.
+            </p>
+            <p className="hidden md:block">
+              Fonksiyonelliği modern tasarımla buluşturan geniş ürün yelpazemizle; bahçelerden teraslara,
+              otellerden sosyal yaşam alanlarına kadar her mekâna değer katan çözümler üretiyoruz.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
+
 
 export default Home;

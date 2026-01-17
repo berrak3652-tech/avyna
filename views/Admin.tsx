@@ -14,6 +14,10 @@ interface AdminProps {
 }
 
 const Admin: React.FC<AdminProps> = ({ products, onAddProduct, onUpdateProduct, onDeleteProduct, onNavigate }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState(false);
+
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -198,8 +202,54 @@ const Admin: React.FC<AdminProps> = ({ products, onAddProduct, onUpdateProduct, 
     }
   };
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === 'admin123') { // Varsayılan şifre
+      setIsAuthenticated(true);
+      setLoginError(false);
+    } else {
+      setLoginError(true);
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center px-6">
+        <div className="max-w-md w-full bg-white dark:bg-surface-dark p-12 border border-black/5 dark:border-white/5 shadow-2xl">
+          <div className="text-center mb-10">
+            <div className="text-3xl font-black tracking-[0.4em] uppercase mb-4">Avyna</div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Yönetim Paneli Girişi</p>
+          </div>
+          <form onSubmit={handleLogin} className="space-y-8">
+            <div className="space-y-2">
+              <label className="block text-[10px] uppercase font-black text-gray-400 tracking-widest">Giriş Şifresi</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={`w-full border-b-2 bg-transparent py-4 outline-none transition-all font-bold text-center tracking-[0.5em] ${loginError ? 'border-red-600' : 'border-black/10 dark:border-white/10 focus:border-orange-600'}`}
+                placeholder="••••••"
+                autoFocus
+              />
+              {loginError && (
+                <p className="text-[9px] text-red-600 font-bold uppercase tracking-widest text-center mt-2">Hatalı Şifre!</p>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-black dark:bg-white text-white dark:text-black py-5 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition-all shadow-xl"
+            >
+              Giriş Yap
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
+
+
     <div className="max-w-6xl mx-auto px-6 py-12">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
         <div>

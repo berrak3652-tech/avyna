@@ -4,9 +4,9 @@ import { Product } from '../types';
 export const INITIAL_PRODUCTS: Product[] = [
   {
     id: '1',
-    name: 'Floki Koltuk',
+    name: 'Floki Berjer',
     price: 18500,
-    description: 'Zarafetin ve konforun buluştuğu nokta. Modern tasarım ve üstün kalite ile salonunuza değer katın.',
+    description: 'Floki Berjer, modern çizgileri ve spor duruşuyla yaşam alanlarınıza hem estetik hem de fonksiyonellik kazandırmak üzere tasarlandı. Oturma odasından çocuk odasına, ofisten bekleme salonlarına kadar pek çok farklı mekânda rahatlıkla kullanılabilen çok yönlü bir berjer modelidir.',
     category: 'Oturma Grubu',
     images: [
       '/y1/Floki/DSC00241.jpg',
@@ -17,14 +17,24 @@ export const INITIAL_PRODUCTS: Product[] = [
       '/y1/Floki/DSC00246.jpg'
     ],
     modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-    dimensions: { width: 220, height: 85, depth: 95 },
+    dimensions: { width: 92, height: 92, depth: 78 },
+    features: [
+      'Modern, dekoratif ve spor tasarım',
+      'Çok amaçlı kullanım (ev, ofis, yazlık vb.)',
+      '1. sınıf sünger ile yumuşak ve ergonomik oturum',
+      'Uzun ömürlü, yüksek kaliteli kumaş',
+      'Kalın ve sağlam metal iskelet',
+      'Fermuarlı oturum minderi ile yer minderi kullanımı',
+      'Kolay kurulum – ustalık gerektirmez'
+    ],
     stock: 5
   },
+
   {
     id: '2',
-    name: 'Thor Koltuk',
+    name: 'Thor 360° Döner Berjer',
     price: 16800,
-    description: 'Güçlü ve zarif tasarımıyla dikkat çeken Thor koltuğu, konfor ve estetiği bir araya getiriyor.',
+    description: 'Thor 360° döner tekli koltuk / berjer, geniş oturma alanı, sağlam çelik profil yapısı ve modern tasarımıyla yaşam alanlarında fark yaratır. Tam 360 derece dönebilen mekanizması sayesinde maksimum hareket özgürlüğü sunar.',
     category: 'Oturma Grubu',
     images: [
       '/y1/Thor/DSC00247.jpg',
@@ -35,14 +45,23 @@ export const INITIAL_PRODUCTS: Product[] = [
       '/y1/Thor/DSC00252.jpg'
     ],
     modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-    dimensions: { width: 200, height: 90, depth: 100 },
+    dimensions: { width: 100, height: 90, depth: 100 },
+    features: [
+      '360° dönebilen mekanizma',
+      'Geniş ve ergonomik oturma alanı',
+      '21 mm x 1 mm dayanıklı çelik profil iskelet',
+      'Statik tekstüre siyah boyalı metal aksam',
+      'Kaliteli kırpıntı sünger ile konforlu oturum',
+      'Silinebilir, uzun ömürlü dokuma kumaş',
+      'Modern, dekoratif ve güçlü tasarım'
+    ],
     stock: 8
   },
   {
     id: '3',
-    name: 'Bhusra Koltuk',
+    name: 'Bhsura İkili Yataklı Koltuk',
     price: 14200,
-    description: 'Minimalist çizgiler ve konforlu oturum deneyimi. Bhusra ile yaşam alanlarınıza modern bir dokunuş.',
+    description: 'Bhsura İkili Yataklı Koltuk, modern tasarımı ve çok fonksiyonlu yapısıyla yaşam alanlarını akıllı çözümlerle buluşturur. Gündüz konforlu bir ikili koltuk, ihtiyaç duyulduğunda ise pratik bir yatak olarak kullanılabilir.',
     category: 'Oturma Grubu',
     images: [
       '/y1/Bhusra/DSC00127.jpg',
@@ -53,7 +72,16 @@ export const INITIAL_PRODUCTS: Product[] = [
       '/y1/Bhusra/DSC00133.jpg'
     ],
     modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-    dimensions: { width: 210, height: 88, depth: 92 },
+    dimensions: { width: 150, height: 70, depth: 60 },
+    features: [
+      'İkili koltuk + yatak fonksiyonu',
+      'Modern ve şık tasarım',
+      'Birinci sınıf dayanıklı metal profil iskelet',
+      'Kademeli ve katlanma mekanizmalı yapı',
+      'Esneme, gıcırdama ve sallanma yapmaz',
+      'Kaliteli kırpıntı sünger dolgu',
+      'Kolay temizlenebilir, silinebilir kumaş'
+    ],
     stock: 6
   },
   {
@@ -91,9 +119,9 @@ export const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: '6',
-    name: 'Harpy Koltuk',
+    name: 'Harpy Sallanır Sandalye',
     price: 17200,
-    description: 'Benzersiz tasarımı ve üstün konforu ile Harpy, yaşam alanlarınıza karakter katar.',
+    description: 'Harpy Sallanır Sandalye, konforu, sağlamlığı ve ergonomiyi tek bir tasarımda buluşturur. 250 kg taşıma kapasitesi ve devrilmez dengeli formuyla üst segment bir sallanır sandalye deneyimi sunar.',
     category: 'Oturma Grubu',
     images: [
       '/y1/Harpy/DSC00092.jpg',
@@ -103,15 +131,24 @@ export const INITIAL_PRODUCTS: Product[] = [
       '/y1/Harpy/DSC00101.jpg'
     ],
     modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-    dimensions: { width: 215, height: 87, depth: 96 },
+    dimensions: { width: 60, height: 87, depth: 110 },
+    features: [
+      '%100 yerli üretim',
+      'Ergonomik ve konforlu oturum yapısı',
+      'Tamamı metal profil iskelet',
+      '250 kg taşıma kapasitesi',
+      'Devrilmez, dengeli ve güvenli tasarım',
+      'Fermuarlı ve yıkanabilir kol kumaşları',
+      'Kolay kurulum – ustalık gerektirmez'
+    ],
     stock: 4
   },
   {
     id: '7',
-    name: 'Lich Koltuk',
+    name: 'Lich Katlanabilir Çalışma Masası',
     price: 16400,
-    description: 'Modern ve şık. Lich koltuğu ile evinize premium bir atmosfer katın.',
-    category: 'Oturma Grubu',
+    description: 'Lich Katlanabilir Çalışma Masası; laptop sehpası, çizim masası veya öğrenci masası olarak çok amaçlı kullanılabilir. Katlanabilir mekanizması sayesinde minimum alan kaplar ve yer tasarrufu sağlar.',
+    category: 'Aksesuar',
     images: [
       '/y1/Lich/DSC00274.jpg',
       '/y1/Lich/DSC00275.jpg',
@@ -120,15 +157,24 @@ export const INITIAL_PRODUCTS: Product[] = [
       '/y1/Lich/DSC00279.jpg'
     ],
     modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-    dimensions: { width: 205, height: 84, depth: 90 },
+    dimensions: { width: 77, height: 114, depth: 63 },
+    features: [
+      'Çok amaçlı kullanım (Laptop, çizim, ofis)',
+      'Katlanabilir tasarım ile yer tasarrufu',
+      'Pratik üst raf ile düzenli çalışma alanı',
+      '1 mm kalınlığında dayanıklı metal profil',
+      'Şık Atlantik çam desenli yüzey',
+      'Ev, ofis ve çalışma alanları için ideal',
+      'Kolay temizlenebilir yüzey'
+    ],
     stock: 9
   },
   {
     id: '8',
-    name: 'Napper Koltuk',
+    name: 'Napper Katlanabilir Şezlong',
     price: 12800,
-    description: 'Rahatlatıcı ve konforlu. Napper ile dinlenme anlarınızı daha keyifli hale getirin.',
-    category: 'Oturma Grubu',
+    description: 'Napper Katlanabilir Şezlong, açık alanlarda maksimum konfor ve pratik kullanım sunar. 5 kademeli ayarlanabilir mekanizması ile bahçe, balkon ve havuz kenarı için ideal bir çözümdür.',
+    category: 'Aksesuar',
     images: [
       '/y1/Napper/DSC00056.jpg',
       '/y1/Napper/DSC00057.jpg',
@@ -138,7 +184,16 @@ export const INITIAL_PRODUCTS: Product[] = [
       '/y1/Napper/DSC00062.jpg'
     ],
     modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-    dimensions: { width: 190, height: 78, depth: 86 },
+    dimensions: { width: 55, height: 100, depth: 90 },
+    features: [
+      '5 kademeli ayarlanabilir sırt yapısı',
+      'Katlanabilir ve hafif tasarım',
+      'Kolay taşıma ve depolama',
+      'Su ve kir tutmayan dış mekân kumaşı',
+      'Ergonomik sünger dolgulu oturum',
+      'Dayanıklı metal profil iskelet',
+      'Kurulu gönderim – montaj gerektirmez'
+    ],
     stock: 11
   },
   {
@@ -176,9 +231,9 @@ export const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: '11',
-    name: 'Storm Koltuk',
+    name: 'Storm İkili Yataklı Koltuk',
     price: 17800,
-    description: 'Güçlü ve etkileyici. Storm koltuğu ile yaşam alanınıza dinamizm katın.',
+    description: 'Storm İkili Yataklı Koltuk, modern tasarımı ve akıllı katlanma mekanizmasıyla yaşam alanlarını çok yönlü çözümlerle buluşturur. 350 kg taşıma kapasitesi ile sağlam ve uzun ömürlü bir kullanım sunar.',
     category: 'Oturma Grubu',
     images: [
       '/y1/Storm/DSC00150.jpg',
@@ -189,7 +244,40 @@ export const INITIAL_PRODUCTS: Product[] = [
       '/y1/Storm/DSC00157.jpg'
     ],
     modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-    dimensions: { width: 225, height: 89, depth: 94 },
+    dimensions: { width: 80, height: 80, depth: 180 },
+    features: [
+      '%100 yerli üretim',
+      '350 kg maksimum taşıma kapasitesi',
+      'Dayanıklı çelik profil iskelet',
+      '5 kademeli katlanma sistemi',
+      'Sessiz kullanım: gıcırdama yapmaz',
+      'Silinebilir kumaş ile kolay temizlik',
+      'Kurulumu kolay demonte tasarım'
+    ],
     stock: 6
+  },
+  {
+    id: '12',
+    name: 'Aila Ahşap Detaylı Sallanan Koltuk',
+    price: 21500,
+    description: 'Aila Sallanan Koltuk, doğal ahşap estetiğini modern metal gövdeyle birleştirerek yaşam alanlarınıza zamansız bir şıklık kazandırır. 1. sınıf gürgen ağacından üretilmiş ahşap detayları yüksek dayanıklılık katar.',
+    category: 'Oturma Grubu',
+    images: [
+      '/y1/model (1).png',
+      '/y1/model (6).png'
+    ],
+    modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+    dimensions: { width: 65, height: 100, depth: 100 },
+    features: [
+      '%100 yerli üretim – AVYNA kalitesi',
+      '1. sınıf gürgen ağacından ahşap detaylar',
+      'Dayanıklı metal profil gövde',
+      '300 kg taşıma kapasitesi',
+      '28 DNS yoğunluklu sünger ile üstün konfor',
+      'Devrilmez ve dengeli sallanma sistemi',
+      'Kolay temizlenebilir dokuma kumaş'
+    ],
+    stock: 3
   }
 ];
+

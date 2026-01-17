@@ -13,8 +13,10 @@ export interface Product {
     height: number;
     depth: number;
   };
+  features?: string[];
   stock: number;
 }
+
 
 export interface User {
   uid: string;
