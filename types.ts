@@ -5,7 +5,8 @@ export interface Product {
   price: number;
   description: string;
   category: string;
-  imageUrl: string;
+  images: string[];
+  videoUrl?: string; // optional video file
   modelUrl: string; // .glb file
   dimensions: {
     width: number;
@@ -26,5 +27,33 @@ export enum ViewMode {
   HOME = 'home',
   ADMIN = 'admin',
   CONSULTANT = 'consultant',
-  DETAIL = 'detail'
+  DETAIL = 'detail',
+  CART = 'cart',
+  CHECKOUT = 'checkout',
+  TRIAL_ROOM = 'trial_room',
+  ORDERS = 'orders'
+}
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
+export interface Order {
+  id: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  address: string;
+  total_amount: number;
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  created_at: string;
+}
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  quantity: number;
+  price: number;
 }

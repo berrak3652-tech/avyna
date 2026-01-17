@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
         <div className="col-span-1 md:col-span-2">
           <div className="text-4xl font-black text-black dark:text-white mb-8 tracking-[0.4em] uppercase">Avyna</div>
           <p className="text-gray-400 text-xs max-w-md font-medium uppercase tracking-widest leading-[2.2]">
-            Yaşam alanlarınıza değer katan, teknoloji ve zarafeti birleştiren premium mobilya deneyimi. 
+            Yaşam alanlarınıza değer katan, teknoloji ve zarafeti birleştiren premium mobilya deneyimi.
             Gemini AI desteği ve 3D görselleştirme ile geleceğin dekorasyon anlayışını bugünden yaşayın.
           </p>
         </div>
@@ -27,25 +27,33 @@ const Footer: React.FC = () => {
         <div>
           <h4 className="text-[10px] uppercase font-black tracking-[0.3em] mb-10 text-orange-600">Sosyal</h4>
           <div className="flex space-x-6 text-gray-400">
-            <Instagram className="cursor-pointer hover:text-black dark:hover:text-white" size={20} />
-            <Facebook className="cursor-pointer hover:text-black dark:hover:text-white" size={20} />
-            <Twitter className="cursor-pointer hover:text-black dark:hover:text-white" size={20} />
-            <Mail className="cursor-pointer hover:text-black dark:hover:text-white" size={20} />
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"><Instagram className="cursor-pointer hover:text-orange-600" size={20} /></a>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"><Facebook className="cursor-pointer hover:text-orange-600" size={20} /></a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"><Twitter className="cursor-pointer hover:text-orange-600" size={20} /></a>
+            <a href="mailto:info@avyna.com"><Mail className="cursor-pointer hover:text-orange-600" size={20} /></a>
           </div>
           <div className="mt-12">
             <h5 className="text-[9px] uppercase font-black mb-4 tracking-[0.3em] text-gray-400">Koleksiyona Katıl</h5>
-            <div className="flex border-b border-black/10 dark:border-white/10 pb-2">
-              <input 
-                type="email" 
-                placeholder="E-POSTA ADRESİNİZ" 
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                alert('Bültene başarıyla kayıt oldunuz!');
+                (e.target as HTMLFormElement).reset();
+              }}
+              className="flex border-b border-black/10 dark:border-white/10 pb-2"
+            >
+              <input
+                type="email"
+                required
+                placeholder="E-POSTA ADRESİNİZ"
                 className="bg-transparent py-2 text-[9px] outline-none flex-grow uppercase font-black tracking-widest"
               />
-              <button className="text-[9px] uppercase font-black tracking-widest hover:text-orange-600 transition-colors">Kaydol</button>
-            </div>
+              <button type="submit" className="text-[9px] uppercase font-black tracking-widest hover:text-orange-600 transition-colors">Kaydol</button>
+            </form>
           </div>
         </div>
       </div>
-      
+
       <div className="max-w-7xl mx-auto mt-24 pt-12 border-t border-black/5 dark:border-white/5 flex flex-col md:flex-row justify-between items-center text-[9px] text-gray-400 uppercase tracking-[0.3em] font-black">
         <p>© 2024 Avyna Furniture. Tüm Hakları Saklıdır.</p>
         <div className="flex space-x-8 mt-6 md:mt-0">
