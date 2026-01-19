@@ -47,5 +47,19 @@ export const ApiService = {
         });
         if (!response.ok) throw new Error('Failed to generate 3D model');
         return await response.json();
+    },
+
+    // PayTR
+    async getPayTRToken(paymentData: any) {
+        const response = await fetch('http://localhost:5000/api/payment/paytr/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(paymentData)
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Payment token could not be generated');
+        }
+        return await response.json();
     }
 };

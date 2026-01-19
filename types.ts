@@ -33,7 +33,9 @@ export enum ViewMode {
   CART = 'cart',
   CHECKOUT = 'checkout',
   TRIAL_ROOM = 'trial_room',
-  ORDERS = 'orders'
+  ORDERS = 'orders',
+  PAYMENT_SUCCESS = 'payment_success',
+  PAYMENT_FAIL = 'payment_fail'
 }
 
 export interface CartItem {

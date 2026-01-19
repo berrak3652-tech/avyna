@@ -15,6 +15,9 @@ const Checkout: React.FC<CheckoutProps> = ({ cart, onNavigate, onClearCart }) =>
     const [email, setEmail] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
+    const [address, setAddress] = useState('');
+    const [phone, setPhone] = useState('');
+    const [paytrToken, setPaytrToken] = useState<string | null>(null);
 
     const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
     const shipping = subtotal > 50000 ? 0 : 250;
@@ -25,20 +28,45 @@ const Checkout: React.FC<CheckoutProps> = ({ cart, onNavigate, onClearCart }) =>
         setIsProcessing(true);
 
         try {
-            await ApiService.createOrder({
+            // 1. Create the order in Supabase first (status: pending)
+            const orderData = await ApiService.createOrder({
                 customerName: `${firstName} ${lastName}`,
                 customerEmail: email,
-                customerPhone: '', // Add field if needed
-                address: 'Örnek Adres', // Replace with real field
+                customerPhone: phone,
+                address: address,
                 total: total
             }, cart);
 
+            // 2. Format basket for PayTR
+            const user_basket = cart.map(item => [
+                item.product.name,
+                item.product.price.toString(),
+                item.quantity
+            ]);
+
+            // 3. Get PayTR Token
+            // In a real app, you'd get the real IP. For dev, we use a placeholder or local IP.
+            const paytrResponse = await ApiService.getPayTRToken({
+                email: email,
+                payment_amount: Math.round(total * 100), // Kuruş
+                merchant_oid: orderData.id,
+                user_name: `${firstName} ${lastName}`,
+                user_address: address,
+                user_phone: phone,
+                user_basket: user_basket,
+                user_ip: '127.0.0.1' // This should be real IP on server
+            });
+
+            if (paytrResponse.status === 'success') {
+                setPaytrToken(paytrResponse.token);
+            } else {
+                throw new Error(paytrResponse.message);
+            }
+
             setIsProcessing(false);
-            setIsSuccess(true);
-            onClearCart();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Order error:", error);
-            alert("Sipariş oluşturulurken bir hata oluştu.");
+            alert("Hata: " + error.message);
             setIsProcessing(false);
         }
     };
@@ -113,39 +141,60 @@ const Checkout: React.FC<CheckoutProps> = ({ cart, onNavigate, onClearCart }) =>
                                             />
                                         </div>
                                         <div className="col-span-2">
-                                            <input required type="text" placeholder="ADRES" className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors uppercase" />
+                                            <input
+                                                required
+                                                type="text"
+                                                placeholder="TELEFON"
+                                                value={phone}
+                                                onChange={(e) => setPhone(e.target.value)}
+                                                className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors uppercase"
+                                            />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <input
+                                                required
+                                                type="text"
+                                                placeholder="ADRES"
+                                                value={address}
+                                                onChange={(e) => setAddress(e.target.value)}
+                                                className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors uppercase"
+                                            />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-8">
-                                    <h3 className="text-[11px] font-black uppercase tracking-[0.3em] flex items-center gap-4 text-orange-600">
-                                        <CreditCard size={18} /> ÖDEME YÖNTEMİ
-                                    </h3>
-                                    <div className="space-y-6">
-                                        <input required type="text" placeholder="KART ÜZERİNDEKİ İSİM" className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors uppercase" />
-                                        <input required type="text" placeholder="KART NUMARASI" className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors uppercase" />
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <input required type="text" placeholder="GG/YY" className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors uppercase" />
-                                            <input required type="text" placeholder="CVV" className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors uppercase" />
+                                {paytrToken ? (
+                                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                        <h3 className="text-[11px] font-black uppercase tracking-[0.3em] flex items-center gap-4 text-orange-600">
+                                            <CreditCard size={18} /> GÜVENLİ ÖDEME (PAYTR)
+                                        </h3>
+                                        <div className="w-full bg-gray-50 dark:bg-surface-dark rounded-xl overflow-hidden shadow-inner border border-black/5 dark:border-white/5">
+                                            <iframe
+                                                src={`https://www.paytr.com/odeme/guvenli/${paytrToken}`}
+                                                id="paytriframe"
+                                                className="w-full min-h-[600px] border-0"
+                                                onLoad={() => {
+                                                    // Optional: handle iframe load
+                                                }}
+                                            />
                                         </div>
                                     </div>
-                                </div>
-
-                                <button
-                                    disabled={isProcessing}
-                                    type="submit"
-                                    className="w-full bg-black dark:bg-white text-white dark:text-black py-8 text-[11px] font-black uppercase tracking-[0.5em] shadow-2xl hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition-all flex items-center justify-center gap-4 relative overflow-hidden"
-                                >
-                                    {isProcessing ? (
-                                        <span className="flex items-center gap-2">
-                                            <div className="size-3 border-2 border-white/30 border-t-white dark:border-black/30 dark:border-t-black rounded-full animate-spin"></div>
-                                            İŞLENİYOR...
-                                        </span>
-                                    ) : (
-                                        <>ÖDEMEYİ TAMAMLA - ₺{total.toLocaleString()}</>
-                                    )}
-                                </button>
+                                ) : (
+                                    <button
+                                        disabled={isProcessing}
+                                        type="submit"
+                                        className="w-full bg-black dark:bg-white text-white dark:text-black py-8 text-[11px] font-black uppercase tracking-[0.5em] shadow-2xl hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition-all flex items-center justify-center gap-4 relative overflow-hidden"
+                                    >
+                                        {isProcessing ? (
+                                            <span className="flex items-center gap-2">
+                                                <div className="size-3 border-2 border-white/30 border-t-white dark:border-black/30 dark:border-t-black rounded-full animate-spin"></div>
+                                                İŞLENİYOR...
+                                            </span>
+                                        ) : (
+                                            <>ÖDEMEYE GEÇ - ₺{total.toLocaleString()}</>
+                                        )}
+                                    </button>
+                                )}
 
                                 <div className="flex items-center justify-center gap-3 text-gray-400">
                                     <Lock size={14} />

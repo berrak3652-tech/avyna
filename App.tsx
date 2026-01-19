@@ -14,6 +14,7 @@ import Orders from './views/Orders';
 import { Product, ViewMode, CartItem } from './types';
 import { INITIAL_PRODUCTS } from './services/mockData';
 import { ApiService } from './services/api';
+import WhatsAppButton from './components/WhatsAppButton';
 
 const App: React.FC = () => {
   const [view, setView] = useState<ViewMode>(ViewMode.HOME);
@@ -40,6 +41,15 @@ const App: React.FC = () => {
     const savedCart = localStorage.getItem('avyna_cart');
     if (savedCart) {
       setCart(JSON.parse(savedCart));
+    }
+
+    // Check for payment redirects
+    const path = window.location.pathname;
+    if (path === '/payment-success') {
+      setView(ViewMode.PAYMENT_SUCCESS);
+      clearCart();
+    } else if (path === '/payment-fail') {
+      setView(ViewMode.PAYMENT_FAIL);
     }
   }, []);
 
@@ -195,10 +205,43 @@ const App: React.FC = () => {
         {view === ViewMode.ORDERS && (
           <Orders onNavigate={handleNavigate} />
         )}
+
+        {view === ViewMode.PAYMENT_SUCCESS && (
+          <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-black px-6">
+            <div className="size-24 bg-green-500/10 flex items-center justify-center rounded-full mb-8">
+              <div className="text-green-500 text-4xl mt-[-5px]">✓</div>
+            </div>
+            <h2 className="text-4xl font-black text-black dark:text-white uppercase tracking-tighter italic mb-4">ÖDEME BAŞARILI</h2>
+            <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.3em] mb-12 text-center max-w-xs">Siparişiniz başarıyla alındı. Teşekkür ederiz!</p>
+            <button
+              onClick={() => handleNavigate(ViewMode.HOME)}
+              className="bg-black dark:bg-white text-white dark:text-black px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition-all shadow-2xl"
+            >
+              ANASAYFAYA DÖN
+            </button>
+          </div>
+        )}
+
+        {view === ViewMode.PAYMENT_FAIL && (
+          <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-black px-6">
+            <div className="size-24 bg-red-500/10 flex items-center justify-center rounded-full mb-8">
+              <div className="text-red-500 text-4xl mt-[-5px]">✕</div>
+            </div>
+            <h2 className="text-4xl font-black text-black dark:text-white uppercase tracking-tighter italic mb-4">ÖDEME BAŞARISIZ</h2>
+            <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.3em] mb-12 text-center max-w-xs">Ödeme işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.</p>
+            <button
+              onClick={() => handleNavigate(ViewMode.CHECKOUT)}
+              className="bg-black dark:bg-white text-white dark:text-black px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition-all shadow-2xl"
+            >
+              ÖDEMEYE DÖN
+            </button>
+          </div>
+        )}
       </main>
 
       {view !== ViewMode.DETAIL && view !== ViewMode.CHECKOUT && view !== ViewMode.TRIAL_ROOM && <Footer />}
       <BottomNav activeView={view} onNavigate={handleNavigate} />
+      <WhatsAppButton />
     </div>
   );
 };
