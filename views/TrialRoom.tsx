@@ -1,7 +1,7 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Product, ViewMode } from '../types';
-import { Camera, X, Maximize2, RotateCcw, ChevronLeft, ChevronRight, Settings, Download, Sparkles, Loader2 } from 'lucide-react';
+import { Camera, X, Maximize2, RotateCcw, ChevronLeft, ChevronRight, Settings, Download, Sparkles, Loader2, Minimize2 } from 'lucide-react';
 
 interface TrialRoomProps {
     products: Product[];
@@ -25,6 +25,8 @@ const TrialRoom: React.FC<TrialRoomProps> = ({ products, onNavigate }) => {
     const [isPlacementConfirmed, setIsPlacementConfirmed] = useState(false);
     const [isPanelVisible, setIsPanelVisible] = useState(true);
     const [isCapturing, setIsCapturing] = useState(false);
+    const [isFullScreen, setIsFullScreen] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const startCamera = async () => {
         try {
@@ -39,7 +41,7 @@ const TrialRoom: React.FC<TrialRoomProps> = ({ products, onNavigate }) => {
         }
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (useCamera && stream && videoRef.current) {
             videoRef.current.srcObject = stream;
         }
@@ -57,12 +59,10 @@ const TrialRoom: React.FC<TrialRoomProps> = ({ products, onNavigate }) => {
         if (!previewContainerRef.current) return;
 
         setIsCapturing(true);
-        // Temporarily hide UI elements for a clean photo
         const originalPanelState = isPanelVisible;
         setIsPanelVisible(false);
 
         try {
-            // Wait for UI to update
             await new Promise(resolve => setTimeout(resolve, 100));
 
             const html2canvas = (await import('html2canvas')).default;
@@ -86,12 +86,14 @@ const TrialRoom: React.FC<TrialRoomProps> = ({ products, onNavigate }) => {
         }
     };
 
-
     const resetRoom = () => {
         setBackgroundImage(null);
         setSelectedProduct(null);
         setIsPlacementConfirmed(false);
         stopCamera();
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        }
     };
 
     const previewContainerRef = useRef<HTMLDivElement>(null);
@@ -103,23 +105,19 @@ const TrialRoom: React.FC<TrialRoomProps> = ({ products, onNavigate }) => {
         }
 
         try {
-            // Temporarily hide the control panel for clean screenshot
             const originalPanelState = isPanelVisible;
             setIsPanelVisible(false);
 
-            // Wait for UI to update
             await new Promise(resolve => setTimeout(resolve, 100));
 
-            // Use html2canvas to capture the preview
             const html2canvas = (await import('html2canvas')).default;
             const canvas = await html2canvas(previewContainerRef.current, {
                 useCORS: true,
                 allowTaint: true,
                 backgroundColor: null,
-                scale: 2 // Higher quality
+                scale: 2
             });
 
-            // Convert to blob and download
             canvas.toBlob((blob) => {
                 if (blob) {
                     const url = URL.createObjectURL(blob);
@@ -133,7 +131,6 @@ const TrialRoom: React.FC<TrialRoomProps> = ({ products, onNavigate }) => {
                 }
             });
 
-            // Restore panel state
             setIsPanelVisible(originalPanelState);
         } catch (error) {
             console.error('Screenshot error:', error);
@@ -141,9 +138,37 @@ const TrialRoom: React.FC<TrialRoomProps> = ({ products, onNavigate }) => {
         }
     };
 
+    const handleFullScreen = () => {
+        if (!containerRef.current) return;
+
+        if (!document.fullscreenElement) {
+            containerRef.current.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
+    useEffect(() => {
+        const onFullScreenChange = () => {
+            setIsFullScreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', onFullScreenChange);
+        return () => document.removeEventListener('fullscreenchange', onFullScreenChange);
+    }, []);
+
+    // Product selection with auto-fullscreen
+    const handleProductSelect = (product: Product) => {
+        setSelectedProduct(product);
+        // Request fullscreen on selection if not already active and on mobile
+        if (!document.fullscreenElement && window.innerWidth < 768) {
+            handleFullScreen();
+        }
+    };
 
     return (
-        <div className="min-h-screen bg-white dark:bg-black pb-24">
+        <div ref={containerRef} className={`min-h-screen bg-white dark:bg-black pb-24 ${isFullScreen ? 'pt-0' : ''}`}>
             {/* Header */}
             <div className="sticky top-0 z-50 bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-black/5 dark:border-white/5 px-4 md:px-6 py-3 md:py-4">
                 <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
@@ -156,6 +181,14 @@ const TrialRoom: React.FC<TrialRoomProps> = ({ products, onNavigate }) => {
                     </button>
                     <h1 className="text-lg md:text-2xl font-black uppercase tracking-tighter">Deneme Odası</h1>
                     <div className="flex items-center gap-2 md:gap-3">
+                        <button
+                            onClick={handleFullScreen}
+                            className="flex items-center gap-1 md:gap-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                            title={isFullScreen ? "Tam Ekrandan Çık" : "Tam Ekran Yap"}
+                        >
+                            {isFullScreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                            <span className="hidden sm:inline">{isFullScreen ? 'KÜÇÜLT' : 'TAM EKRAN'}</span>
+                        </button>
                         {!useCamera && !backgroundImage && (
                             <button
                                 onClick={startCamera}
@@ -192,7 +225,7 @@ const TrialRoom: React.FC<TrialRoomProps> = ({ products, onNavigate }) => {
                     <div className="lg:col-span-2 space-y-4 md:space-y-6">
                         <div
                             ref={previewContainerRef}
-                            className="relative aspect-[4/3] md:aspect-[4/3] bg-gray-50 dark:bg-surface-dark border-2 border-dashed border-black/10 dark:border-white/10 overflow-hidden"
+                            className={`relative bg-gray-50 dark:bg-surface-dark border-2 border-dashed border-black/10 dark:border-white/10 overflow-hidden ${isFullScreen ? 'h-[70vh] md:h-[80vh]' : 'aspect-[4/3]'}`}
                         >
                             {(useCamera || backgroundImage) ? (
                                 <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
@@ -429,7 +462,7 @@ const TrialRoom: React.FC<TrialRoomProps> = ({ products, onNavigate }) => {
                                 {products.map((product) => (
                                     <div
                                         key={product.id}
-                                        onClick={() => setSelectedProduct(product)}
+                                        onClick={() => handleProductSelect(product)}
                                         className={`group cursor-pointer border-2 transition-all p-2 md:p-3 ${selectedProduct?.id === product.id
                                             ? 'border-orange-600 bg-orange-50 dark:bg-orange-900/20'
                                             : 'border-black/5 dark:border-white/5 hover:border-orange-600'
@@ -463,7 +496,6 @@ const TrialRoom: React.FC<TrialRoomProps> = ({ products, onNavigate }) => {
                 </div>
             </div>
 
-            {/* Hidden canvas for camera capture */}
             <canvas ref={canvasRef} className="hidden" />
         </div>
     );
