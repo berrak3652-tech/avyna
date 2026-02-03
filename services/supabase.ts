@@ -28,15 +28,21 @@ export const SupabaseService = {
         }));
     },
 
+
     async addProduct(product: any) {
-        // Map frontend camelCase to database lowercase
+        // Explicitly map only the columns that exist in the Supabase schema
         const dbProduct = {
-            ...product,
+            id: product.id || undefined,
+            name: product.name,
+            price: product.price,
+            category: product.category,
+            description: product.description,
+            stock: product.stock,
             images: product.images || [],
-            modelurl: product.modelUrl
+            modelurl: product.modelUrl,
+            videourl: product.videoUrl,
+            dimensions: product.dimensions
         };
-        // Remove original keys to avoid "schema cache" mismatch if they exist
-        delete dbProduct.modelUrl;
 
         const { data, error } = await supabase
             .from('products')
@@ -44,11 +50,20 @@ export const SupabaseService = {
             .select()
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase Add Product Error:', error);
+            // Provide a cleaner error message for common issues
+            if (error.code === '42703') { // Undefined column
+                throw new Error("Veritabanı şeması güncel değil (videourl sütunu eksik olabilir).");
+            }
+            throw error;
+        }
+
         return {
             ...data,
             images: data.images || [],
-            modelUrl: data.modelurl
+            modelUrl: data.modelurl,
+            videoUrl: data.videourl
         };
     },
 
@@ -58,11 +73,14 @@ export const SupabaseService = {
             .delete()
             .eq('id', id);
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase Delete Product Error:', error);
+            throw error;
+        }
     },
 
     async updateProduct(product: any) {
-        // Map frontend camelCase to database lowercase
+        // Explicitly map only the columns that exist in the Supabase schema
         const dbProduct = {
             name: product.name,
             price: product.price,
@@ -71,6 +89,7 @@ export const SupabaseService = {
             stock: product.stock,
             images: product.images || [],
             modelurl: product.modelUrl,
+            videourl: product.videoUrl,
             dimensions: product.dimensions
         };
 
@@ -81,11 +100,19 @@ export const SupabaseService = {
             .select()
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase Update Product Error:', error);
+            if (error.code === '42703') { // Undefined column
+                throw new Error("Veritabanı şeması güncel değil (videourl sütunu eksik olabilir).");
+            }
+            throw error;
+        }
+
         return {
             ...data,
             images: data.images || [],
-            modelUrl: data.modelurl
+            modelUrl: data.modelurl,
+            videoUrl: data.videourl
         };
     },
 

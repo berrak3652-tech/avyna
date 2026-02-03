@@ -144,9 +144,10 @@ const Admin: React.FC<AdminProps> = ({ products, onAddProduct, onUpdateProduct, 
       setFormData({ name: '', price: '', category: 'Oturma Grubu', description: '', stock: '5', images: [], modelUrl: '', videoUrl: '' });
       setImagePreviews([]);
       setIsAdding(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Submit error:", error);
-      alert("Bir hata oluştu. Görseller çok büyük olabilir, lütfen daha küçük görseller deneyin.");
+      const errorMessage = error.message || "Bilinmeyen bir hata oluştu.";
+      alert(`Bir hata oluştu: ${errorMessage}\n\nİpucu: Görseller çok büyük olabilir veya veritabanında 'videourl' sütunu eksik olabilir.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -194,9 +195,10 @@ const Admin: React.FC<AdminProps> = ({ products, onAddProduct, onUpdateProduct, 
       setImagePreviews([]);
       setIsEditing(false);
       setEditingProduct(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Update error:", error);
-      alert("Güncelleme sırasında bir hata oluştu.");
+      const errorMessage = error.message || "Bilinmeyen bir hata oluştu.";
+      alert(`Güncelleme sırasında bir hata oluştu: ${errorMessage}\n\nİpucu: 'videourl' sütununun veritabanında olduğundan emin olun.`);
     } finally {
       setIsSubmitting(false);
     }

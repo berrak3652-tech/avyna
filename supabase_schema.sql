@@ -35,13 +35,29 @@ CREATE TABLE IF NOT EXISTS order_items (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Enable RLS (Row Level Security) - Optional, for now we can disable or set public
--- ALTER TABLE products ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY "Public Access" ON products FOR SELECT USING (true);
--- CREATE POLICY "Public Insert" ON products FOR INSERT WITH CHECK (true);
--- CREATE POLICY "Public Delete" ON products FOR DELETE USING (true);
+-- === Row Level Security (RLS) Configuration ===
+-- This fixes the "RLS Disabled in Public" warnings in Supabase Dashboard
 
--- For testing, you can disable RLS:
--- ALTER TABLE products DISABLE ROW LEVEL SECURITY;
--- ALTER TABLE orders DISABLE ROW LEVEL SECURITY;
--- ALTER TABLE order_items DISABLE ROW LEVEL SECURITY;
+-- 1. Enable RLS on all tables
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+
+-- 2. Policies for 'products' table
+-- Allow anyone to view products
+CREATE POLICY "Public Read" ON products FOR SELECT USING (true);
+-- Allow all operations for anon (matching current app behavior)
+-- Note: In production, you should restrict INSERT/UPDATE/DELETE to 'authenticated' users
+CREATE POLICY "Anon All" ON products FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- 3. Policies for 'orders' table
+-- Allow anyone to create an order
+CREATE POLICY "Public Insert" ON orders FOR INSERT WITH CHECK (true);
+-- Allow anon to read/manage orders
+CREATE POLICY "Anon All" ON orders FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- 4. Policies for 'order_items' table
+-- Allow anyone to add items to an order
+CREATE POLICY "Public Insert" ON order_items FOR INSERT WITH CHECK (true);
+-- Allow anon to manage order items
+CREATE POLICY "Anon All" ON order_items FOR ALL TO anon USING (true) WITH CHECK (true);
