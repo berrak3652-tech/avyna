@@ -52,7 +52,7 @@ export const ApiService = {
 
     // QNB Finansbank
     async initiateQNBPayment(paymentData: any) {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000');
         const response = await fetch(`${backendUrl}/api/payment/qnb/initiate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
