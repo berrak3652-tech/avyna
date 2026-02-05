@@ -181,7 +181,7 @@ app.post('/api/payment/qnb/initiate', async (req, res) => {
         const clientId = process.env.QNB_MERCHANT_ID;
         const terminalId = process.env.QNB_TERMINAL_ID;
         const merchantPass = process.env.QNB_MERCHANT_PASS;
-        const storeType = process.env.QNB_STORE_TYPE || "3d_pay"; // Try 3d_pay, 3d, or 3d_model
+        const storeType = process.env.QNB_STORE_TYPE || "3d"; // 3d for standard 3D Secure
 
         const okUrl = `${process.env.BACKEND_URL || 'https://avyna.com.tr'}/payment-success`;
         const failUrl = `${process.env.BACKEND_URL || 'https://avyna.com.tr'}/payment-fail`;
@@ -280,7 +280,7 @@ app.post('/payment-fail', (req, res) => {
 });
 
 // Fallback to index.html for any other routes (SPA routing)
-app.get('*', (req, res) => {
+app.get('/{*path}', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
