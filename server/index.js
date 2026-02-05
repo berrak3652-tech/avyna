@@ -194,6 +194,14 @@ app.post('/api/payment/qnb/initiate', async (req, res) => {
         console.log('Constructed Hash Str (masked):', hashStr.replace(merchantPass, '***'));
         const hash = crypto.createHash('sha1').update(hashStr).digest('base64');
 
+        // QNB expects expiry as YYMM. If input is MM/YY, we swap it.
+        let expiryFormatted = expiry.replace('/', '');
+        if (expiryFormatted.length === 4) {
+            const mm = expiryFormatted.substring(0, 2);
+            const yy = expiryFormatted.substring(2, 4);
+            expiryFormatted = yy + mm;
+        }
+
         const params = {
             clientid: clientId,
             terminalid: terminalId,
@@ -208,16 +216,16 @@ app.post('/api/payment/qnb/initiate', async (req, res) => {
             lang: "tr",
             storetype: storeType,
             pan: pan,
-            Eexp: expiry.replace('/', ''),
+            Eexp: expiryFormatted,
             cv2: cv2,
             email: email,
             phone: user_phone
         };
 
-        // For QNB, we return these params to the client 
+        // Updated Gateway URL
         res.json({
             status: 'success',
-            paymentUrl: 'https://vpos.qnb.com.tr/Gateway/Default.aspx',
+            paymentUrl: 'https://vpos.qnbfinansbank.com/Gateway/Default.aspx',
             params: params
         });
 
