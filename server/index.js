@@ -293,6 +293,16 @@ app.post('/payment-fail', (req, res) => {
 });
 
 // Fallback to index.html for any other routes (SPA routing)
+// Specific routes for payment pages (needed for SPA to work after redirect)
+app.get('/payment-success', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
+app.get('/payment-fail', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
+// Catch-all for other SPA routes
 app.get('/{*path}', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
