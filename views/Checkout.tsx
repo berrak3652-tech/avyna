@@ -17,7 +17,10 @@ const Checkout: React.FC<CheckoutProps> = ({ cart, onNavigate, onClearCart }) =>
     const [email, setEmail] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [address, setAddress] = useState('');
+    const [street, setStreet] = useState('');
+    const [neighborhood, setNeighborhood] = useState('');
+    const [district, setDistrict] = useState('');
+    const [city, setCity] = useState('');
     const [phone, setPhone] = useState('');
     const [cardNumber, setCardNumber] = useState('');
     const [cardExpiry, setCardExpiry] = useState('');
@@ -32,12 +35,14 @@ const Checkout: React.FC<CheckoutProps> = ({ cart, onNavigate, onClearCart }) =>
         setIsProcessing(true);
 
         try {
+            const fullAddress = `${neighborhood} MAH. ${street} SOK. ${district}/${city}`;
+
             // 1. Create the order in Supabase/Local Database first
             const orderData = await ApiService.createOrder({
                 customerName: `${firstName} ${lastName}`,
                 customerEmail: email,
                 customerPhone: phone,
-                address: address,
+                address: fullAddress,
                 total: total
             }, cart);
 
@@ -46,10 +51,10 @@ const Checkout: React.FC<CheckoutProps> = ({ cart, onNavigate, onClearCart }) =>
             // 2. Initiate QNB Payment
             const qnbResponse = await ApiService.initiateQNBPayment({
                 email: email,
-                payment_amount: total.toString(),
+                payment_amount: total.toFixed(2), // Ensure 2 decimal places for QNB
                 merchant_oid: merchant_oid,
                 user_name: `${firstName} ${lastName}`,
-                user_address: address,
+                user_address: fullAddress,
                 user_phone: phone,
                 pan: cardNumber.replace(/\s/g, ''),
                 expiry: cardExpiry,
@@ -162,13 +167,41 @@ const Checkout: React.FC<CheckoutProps> = ({ cart, onNavigate, onClearCart }) =>
                                                 className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors uppercase"
                                             />
                                         </div>
+                                        <div className="col-span-2 grid grid-cols-2 gap-6">
+                                            <input
+                                                required
+                                                type="text"
+                                                placeholder="ŞEHİR"
+                                                value={city}
+                                                onChange={(e) => setCity(e.target.value)}
+                                                className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors uppercase"
+                                            />
+                                            <input
+                                                required
+                                                type="text"
+                                                placeholder="İLÇE"
+                                                value={district}
+                                                onChange={(e) => setDistrict(e.target.value)}
+                                                className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors uppercase"
+                                            />
+                                        </div>
                                         <div className="col-span-2">
                                             <input
                                                 required
                                                 type="text"
-                                                placeholder="ADRES"
-                                                value={address}
-                                                onChange={(e) => setAddress(e.target.value)}
+                                                placeholder="MAHALLE"
+                                                value={neighborhood}
+                                                onChange={(e) => setNeighborhood(e.target.value)}
+                                                className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors uppercase"
+                                            />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <input
+                                                required
+                                                type="text"
+                                                placeholder="SOKAK / NO"
+                                                value={street}
+                                                onChange={(e) => setStreet(e.target.value)}
                                                 className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors uppercase"
                                             />
                                         </div>
