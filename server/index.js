@@ -12,8 +12,10 @@ const crypto = require('crypto');
 const app = express();
 const port = process.env.PORT || 5000;
 
+
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Database Initialization
 const db = new Database('database.db');
@@ -151,9 +153,10 @@ app.post('/api/ai/image-to-3d', async (req, res) => {
     }
 });
 
-// --- PAYTR PAYMENT ROUTES ---
 
-app.post('/api/payment/paytr/token', async (req, res) => {
+// --- QNB FINANSBANK PAYMENT ROUTES ---
+
+app.post('/api/payment/qnb/initiate', async (req, res) => {
     try {
         const {
             email,
@@ -163,86 +166,100 @@ app.post('/api/payment/paytr/token', async (req, res) => {
             user_address,
             user_phone,
             user_basket,
-            user_ip
+            pan,        // Card Number
+            expiry,     // Card Expiry (MM/YY or MM/YYYY)
+            cv2,        // CVV
+            cardType    // 1 for Visa, 2 for MasterCard
         } = req.body;
 
-        const merchant_id = process.env.PAYTR_MERCHANT_ID || 'dummy_id';
-        const merchant_key = process.env.PAYTR_MERCHANT_KEY || 'dummy_key';
-        const merchant_salt = process.env.PAYTR_MERCHANT_SALT || 'dummy_salt';
+        const clientId = process.env.QNB_MERCHANT_ID;
+        const terminalId = process.env.QNB_TERMINAL_ID;
+        const merchantPass = process.env.QNB_MERCHANT_PASS;
 
-        const timeout_limit = "30";
-        const debug_on = 1;
-        const test_mode = 1; // Set to 0 for production
-        const no_installment = 0;
-        const max_installment = 0;
-        const currency = "TL";
-        const merchant_ok_url = `${req.get('origin')}/payment-success`;
-        const merchant_fail_url = `${req.get('origin')}/payment-fail`;
 
-        // Create user_basket if not provided stringified
-        const basket = typeof user_basket === 'string' ? user_basket : JSON.stringify(user_basket);
-        const user_basket_base64 = Buffer.from(basket).toString('base64');
+        const okUrl = `${process.env.BACKEND_URL || 'http://localhost:5000'}/payment-success`;
+        const failUrl = `${process.env.BACKEND_URL || 'http://localhost:5000'}/payment-fail`;
 
-        const hash_str = merchant_id + user_ip + merchant_oid + email + payment_amount + user_basket_base64 + no_installment + max_installment + currency + test_mode;
-        const paytr_token = crypto.createHmac('sha256', merchant_key).update(hash_str + merchant_salt).digest('base64');
+        const rnd = crypto.randomBytes(10).toString('hex');
+        const hashStr = clientId + merchant_oid + payment_amount + okUrl + failUrl + "Auth" + rnd + merchantPass;
+        const hash = crypto.createHash('sha1').update(hashStr).digest('base64');
 
         const params = {
-            merchant_id,
-            user_ip,
-            merchant_oid,
-            email,
-            payment_amount,
-            paytr_token,
-            user_basket: user_basket_base64,
-            debug_on,
-            no_installment,
-            max_installment,
-            user_name,
-            user_address,
-            user_phone,
-            merchant_ok_url,
-            merchant_fail_url,
-            timeout_limit,
-            currency,
-            test_mode
+            clientid: clientId,
+            terminalid: terminalId,
+            oid: merchant_oid,
+            amount: payment_amount,
+            okUrl: okUrl,
+            failUrl: failUrl,
+            trantype: "Auth",
+            rnd: rnd,
+            hash: hash,
+            currency: "949",
+            lang: "tr",
+            storetype: "3d_pay",
+            pan: pan,
+            Eexp: expiry.replace('/', ''),
+            cv2: cv2,
+            email: email,
+            phone: user_phone
         };
 
-        const response = await axios.post('https://www.paytr.com/odeme/api/get-token', new URLSearchParams(params));
+        // For QNB, we usually return these params to the client 
+        // and the client submits them to https://vpos.qnb.com.tr/Gateway/Default.aspx
+        res.json({
+            status: 'success',
+            paymentUrl: 'https://vpos.qnb.com.tr/Gateway/Default.aspx',
+            params: params
+        });
 
-        if (response.data.status === 'success') {
-            res.json({ status: 'success', token: response.data.token });
-        } else {
-            res.status(400).json({ status: 'error', message: response.data.err_msg });
-        }
     } catch (error) {
-        console.error('PayTR Token Error:', error);
+        console.error('QNB Initiation Error:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// PayTR Callback (Notification)
-app.post('/api/payment/paytr/callback', async (req, res) => {
-    const { merchant_oid, status, total_amount, hash } = req.body;
-    const merchant_key = process.env.PAYTR_MERCHANT_KEY || 'dummy_key';
-    const merchant_salt = process.env.PAYTR_MERCHANT_SALT || 'dummy_salt';
 
-    // Verify hash
-    const hash_str = merchant_oid + merchant_salt + status + total_amount;
-    const expected_hash = crypto.createHmac('sha256', merchant_key).update(hash_str).digest('base64');
-
-    if (hash !== expected_hash) {
-        return res.send('PAYTR notification failed: bad hash');
-    }
-
-    if (status === 'success') {
-        // Update order status in your database
-        console.log(`Order ${merchant_oid} paid successfully`);
-        // Here you would typically call your DB service to update the order
-    } else {
-        console.log(`Order ${merchant_oid} payment failed`);
-    }
-
+// QNB Callback
+app.post('/api/payment/qnb/callback', async (req, res) => {
+    console.log('QNB Callback received:', req.body);
     res.send('OK');
+});
+
+// Handle Bank POST redirects back to our site
+app.post('/payment-success', async (req, res) => {
+    const { oid } = req.body;
+    console.log('Payment successful for order:', oid);
+
+    // Attempt to update order status in Supabase using REST API
+    // This allows us to avoid installing @supabase/supabase-js on the backend if not already present
+    try {
+        const supabaseUrl = process.env.VITE_SUPABASE_URL;
+        const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+
+        if (supabaseUrl && supabaseKey && oid) {
+            await axios.patch(`${supabaseUrl}/rest/v1/orders?id=eq.${oid}`,
+                { status: 'paid' },
+                {
+                    headers: {
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseKey}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    }
+                }
+            ).catch(err => console.log('Supabase Update Warning (likely RLS):', err.message));
+        }
+    } catch (err) {
+        console.error('Error updating order status in Supabase:', err.message);
+    }
+
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment-success`);
+});
+
+app.post('/payment-fail', (req, res) => {
+    const { oid, errmsg } = req.body;
+    console.log('Payment failed for order:', oid, 'Error:', errmsg);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment-fail`);
 });
 
 app.listen(port, () => {

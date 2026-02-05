@@ -49,16 +49,18 @@ export const ApiService = {
         return await response.json();
     },
 
-    // PayTR
-    async getPayTRToken(paymentData: any) {
-        const response = await fetch('http://localhost:5000/api/payment/paytr/token', {
+
+    // QNB Finansbank
+    async initiateQNBPayment(paymentData: any) {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+        const response = await fetch(`${backendUrl}/api/payment/qnb/initiate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(paymentData)
         });
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.message || 'Payment token could not be generated');
+            throw new Error(error.message || 'Payment could not be initiated');
         }
         return await response.json();
     }

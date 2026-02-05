@@ -11,13 +11,17 @@ interface CheckoutProps {
 
 const Checkout: React.FC<CheckoutProps> = ({ cart, onNavigate, onClearCart }) => {
     const [isProcessing, setIsProcessing] = useState(false);
+
+
     const [isSuccess, setIsSuccess] = useState(false);
     const [email, setEmail] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [address, setAddress] = useState('');
     const [phone, setPhone] = useState('');
-    const [paytrToken, setPaytrToken] = useState<string | null>(null);
+    const [cardNumber, setCardNumber] = useState('');
+    const [cardExpiry, setCardExpiry] = useState('');
+    const [cardCVC, setCardCVC] = useState('');
 
     const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
     const shipping = subtotal > 50000 ? 0 : 250;
@@ -28,7 +32,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cart, onNavigate, onClearCart }) =>
         setIsProcessing(true);
 
         try {
-            // 1. Create the order in Supabase first (status: pending)
+            // 1. Create the order in Supabase/Local Database first
             const orderData = await ApiService.createOrder({
                 customerName: `${firstName} ${lastName}`,
                 customerEmail: email,
@@ -37,33 +41,41 @@ const Checkout: React.FC<CheckoutProps> = ({ cart, onNavigate, onClearCart }) =>
                 total: total
             }, cart);
 
-            // 2. Format basket for PayTR
-            const user_basket = cart.map(item => [
-                item.product.name,
-                item.product.price.toString(),
-                item.quantity
-            ]);
+            const merchant_oid = orderData.orderId || orderData.id;
 
-            // 3. Get PayTR Token
-            // In a real app, you'd get the real IP. For dev, we use a placeholder or local IP.
-            const paytrResponse = await ApiService.getPayTRToken({
+            // 2. Initiate QNB Payment
+            const qnbResponse = await ApiService.initiateQNBPayment({
                 email: email,
-                payment_amount: Math.round(total * 100), // Kuruş
-                merchant_oid: orderData.id,
+                payment_amount: total.toString(),
+                merchant_oid: merchant_oid,
                 user_name: `${firstName} ${lastName}`,
                 user_address: address,
                 user_phone: phone,
-                user_basket: user_basket,
-                user_ip: '127.0.0.1' // This should be real IP on server
+                pan: cardNumber.replace(/\s/g, ''),
+                expiry: cardExpiry,
+                cv2: cardCVC
             });
 
-            if (paytrResponse.status === 'success') {
-                setPaytrToken(paytrResponse.token);
+            if (qnbResponse.status === 'success') {
+                // 3. Create a hidden form and submit it to QNB VPOS Gateway
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = qnbResponse.paymentUrl;
+
+                Object.keys(qnbResponse.params).forEach(key => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = qnbResponse.params[key];
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
             } else {
-                throw new Error(paytrResponse.message);
+                throw new Error(qnbResponse.message || 'Ödeme başlatılamadı');
             }
 
-            setIsProcessing(false);
         } catch (error: any) {
             console.error("Order error:", error);
             alert("Hata: " + error.message);
@@ -163,42 +175,72 @@ const Checkout: React.FC<CheckoutProps> = ({ cart, onNavigate, onClearCart }) =>
                                     </div>
                                 </div>
 
-                                {paytrToken ? (
-                                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                        <h3 className="text-[11px] font-black uppercase tracking-[0.3em] flex items-center gap-4 text-orange-600">
-                                            <CreditCard size={18} /> GÜVENLİ ÖDEME (PAYTR)
-                                        </h3>
-                                        <div className="w-full bg-gray-50 dark:bg-surface-dark rounded-xl overflow-hidden shadow-inner border border-black/5 dark:border-white/5">
-                                            <iframe
-                                                src={`https://www.paytr.com/odeme/guvenli/${paytrToken}`}
-                                                id="paytriframe"
-                                                className="w-full min-h-[600px] border-0"
-                                                onLoad={() => {
-                                                    // Optional: handle iframe load
+                                <div className="space-y-8">
+                                    <h3 className="text-[11px] font-black uppercase tracking-[0.3em] flex items-center gap-4 text-orange-600">
+                                        <CreditCard size={18} /> KART BİLGİLERİ
+                                    </h3>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="col-span-2">
+                                            <input
+                                                required
+                                                type="text"
+                                                placeholder="KART NUMARASI"
+                                                value={cardNumber}
+                                                onChange={(e) => {
+                                                    const val = e.target.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
+                                                    if (val.length <= 19) setCardNumber(val);
                                                 }}
+                                                className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <input
+                                                required
+                                                type="text"
+                                                placeholder="AA/YY"
+                                                value={cardExpiry}
+                                                onChange={(e) => {
+                                                    let val = e.target.value.replace(/\D/g, '');
+                                                    if (val.length > 2) val = val.substring(0, 2) + '/' + val.substring(2, 4);
+                                                    if (val.length <= 5) setCardExpiry(val);
+                                                }}
+                                                className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <input
+                                                required
+                                                type="text"
+                                                placeholder="CVC"
+                                                value={cardCVC}
+                                                onChange={(e) => {
+                                                    const val = e.target.value.replace(/\D/g, '');
+                                                    if (val.length <= 3) setCardCVC(val);
+                                                }}
+                                                className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-4 text-xs font-black tracking-widest outline-none focus:border-orange-600 transition-colors"
                                             />
                                         </div>
                                     </div>
-                                ) : (
-                                    <button
-                                        disabled={isProcessing}
-                                        type="submit"
-                                        className="w-full bg-black dark:bg-white text-white dark:text-black py-8 text-[11px] font-black uppercase tracking-[0.5em] shadow-2xl hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition-all flex items-center justify-center gap-4 relative overflow-hidden"
-                                    >
-                                        {isProcessing ? (
-                                            <span className="flex items-center gap-2">
-                                                <div className="size-3 border-2 border-white/30 border-t-white dark:border-black/30 dark:border-t-black rounded-full animate-spin"></div>
-                                                İŞLENİYOR...
-                                            </span>
-                                        ) : (
-                                            <>ÖDEMEYE GEÇ - ₺{total.toLocaleString()}</>
-                                        )}
-                                    </button>
-                                )}
+                                </div>
+
+                                <button
+                                    disabled={isProcessing}
+                                    type="submit"
+                                    className="w-full bg-black dark:bg-white text-white dark:text-black py-8 text-[11px] font-black uppercase tracking-[0.5em] shadow-2xl hover:bg-orange-600 dark:hover:bg-orange-600 dark:hover:text-white transition-all flex items-center justify-center gap-4 relative overflow-hidden"
+                                >
+                                    {isProcessing ? (
+                                        <span className="flex items-center gap-2">
+                                            <div className="size-3 border-2 border-white/30 border-t-white dark:border-black/30 dark:border-t-black rounded-full animate-spin"></div>
+                                            İŞLENİYOR...
+                                        </span>
+                                    ) : (
+                                        <>ÖDEMEYİ TAMAMLA - ₺{total.toLocaleString()}</>
+                                    )}
+                                </button>
 
                                 <div className="flex items-center justify-center gap-3 text-gray-400">
                                     <Lock size={14} />
-                                    <span className="text-[8px] font-black uppercase tracking-widest">Tüm işlemleriniz şifrelenmiştir</span>
+                                    <span className="text-[8px] font-black uppercase tracking-widest">Tüm işlemleriniz 3D Secure ile korunmaktadır</span>
                                 </div>
                             </form>
                         </section>
