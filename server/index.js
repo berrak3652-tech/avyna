@@ -191,6 +191,7 @@ app.post('/api/payment/qnb/initiate', async (req, res) => {
 
         // QNB Hash Order: clientid + oid + amount + okUrl + failUrl + trantype + installment + rnd + merchantPass
         const hashStr = clientId + merchant_oid + payment_amount + okUrl + failUrl + "Auth" + installment + rnd + merchantPass;
+        console.log('Constructed Hash Str (masked):', hashStr.replace(merchantPass, '***'));
         const hash = crypto.createHash('sha1').update(hashStr).digest('base64');
 
         const params = {
