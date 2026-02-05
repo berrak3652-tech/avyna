@@ -17,6 +17,9 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Serve static files from the 'dist' directory (frontend)
+app.use(express.static(path.join(__dirname, '../dist')));
+
 // Database Initialization
 const db = new Database('database.db');
 
@@ -260,6 +263,11 @@ app.post('/payment-fail', (req, res) => {
     const { oid, errmsg } = req.body;
     console.log('Payment failed for order:', oid, 'Error:', errmsg);
     res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment-fail`);
+});
+
+// Fallback to index.html for any other routes (SPA routing)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 app.listen(port, () => {

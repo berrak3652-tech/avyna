@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "backend": "nodemon server/index.js",
-    "start": "concurrently \"npm run dev\" \"npm run backend\"",
-    "start:dev": "npm start",
+    "backend": "node server/index.js",
+    "start": "node server/index.js",
+    "start:local": "concurrently \"npm run dev\" \"npm run backend\"",
     "build": "vite build",
     "preview": "vite preview",
     "test:env": "node server/test_env.js"
