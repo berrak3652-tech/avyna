@@ -181,13 +181,16 @@ app.post('/api/payment/qnb/initiate', async (req, res) => {
         const clientId = process.env.QNB_MERCHANT_ID;
         const terminalId = process.env.QNB_TERMINAL_ID;
         const merchantPass = process.env.QNB_MERCHANT_PASS;
+        const storeType = process.env.QNB_STORE_TYPE || "3d_pay"; // Try 3d_pay, 3d, or 3d_model
 
-
-        const okUrl = `${process.env.BACKEND_URL || 'http://localhost:5000'}/payment-success`;
-        const failUrl = `${process.env.BACKEND_URL || 'http://localhost:5000'}/payment-fail`;
+        const okUrl = `${process.env.BACKEND_URL || 'https://avyna.com.tr'}/payment-success`;
+        const failUrl = `${process.env.BACKEND_URL || 'https://avyna.com.tr'}/payment-fail`;
 
         const rnd = crypto.randomBytes(10).toString('hex');
-        const hashStr = clientId + merchant_oid + payment_amount + okUrl + failUrl + "Auth" + rnd + merchantPass;
+        const installment = ""; // Leave blank for single payment
+
+        // QNB Hash Order: clientid + oid + amount + okUrl + failUrl + trantype + installment + rnd + merchantPass
+        const hashStr = clientId + merchant_oid + payment_amount + okUrl + failUrl + "Auth" + installment + rnd + merchantPass;
         const hash = crypto.createHash('sha1').update(hashStr).digest('base64');
 
         const params = {
@@ -202,7 +205,7 @@ app.post('/api/payment/qnb/initiate', async (req, res) => {
             hash: hash,
             currency: "949",
             lang: "tr",
-            storetype: "3d_pay",
+            storetype: storeType,
             pan: pan,
             Eexp: expiry.replace('/', ''),
             cv2: cv2,
@@ -210,8 +213,7 @@ app.post('/api/payment/qnb/initiate', async (req, res) => {
             phone: user_phone
         };
 
-        // For QNB, we usually return these params to the client 
-        // and the client submits them to https://vpos.qnb.com.tr/Gateway/Default.aspx
+        // For QNB, we return these params to the client 
         res.json({
             status: 'success',
             paymentUrl: 'https://vpos.qnb.com.tr/Gateway/Default.aspx',
