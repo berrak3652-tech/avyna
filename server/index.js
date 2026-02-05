@@ -178,23 +178,30 @@ app.post('/api/payment/qnb/initiate', async (req, res) => {
             cardType    // 1 for Visa, 2 for MasterCard
         } = req.body;
 
+        const mbrId = process.env.QNB_MBR_ID || "5";
         const clientId = process.env.QNB_MERCHANT_ID;
         const terminalId = process.env.QNB_TERMINAL_ID;
         const merchantPass = process.env.QNB_MERCHANT_PASS;
-        const storeType = process.env.QNB_STORE_TYPE || "3d"; // 3d for standard 3D Secure
+        const storeType = process.env.QNB_STORE_TYPE || "3d";
 
         const okUrl = `${process.env.BACKEND_URL || 'https://avyna.com.tr'}/payment-success`;
         const failUrl = `${process.env.BACKEND_URL || 'https://avyna.com.tr'}/payment-fail`;
 
         const rnd = crypto.randomBytes(10).toString('hex');
         const installment = ""; // Leave blank for single payment
+        const txnType = "Auth";
+        const currency = "949"; // TRY
 
-        // QNB Hash Order: clientid + oid + amount + okUrl + failUrl + trantype + installment + rnd + merchantPass
-        const hashStr = clientId + merchant_oid + payment_amount + okUrl + failUrl + "Auth" + installment + rnd + merchantPass;
-        console.log('Constructed Hash Str (masked):', hashStr.replace(merchantPass, '***'));
-        const hash = crypto.createHash('sha1').update(hashStr).digest('base64');
+        // QNB Hash Order (from documentation): 
+        // MbrId + MrcOrderId + PurchAmount + OkUrl + FailUrl + TxnType + InstallmentCount + Rnd + MerchantPass
+        const hashStr = mbrId + merchant_oid + payment_amount + okUrl + failUrl + txnType + installment + rnd + merchantPass;
+        console.log('Hash String (masked):', hashStr.replace(merchantPass, '***'));
 
-        // QNB expects expiry as YYMM. If input is MM/YY, we swap it.
+        // Use SHA512 for hash calculation (QNB standard)
+        const hash = crypto.createHash('sha512').update(hashStr, 'utf8').digest('base64');
+        console.log('Generated Hash:', hash);
+
+        // QNB expects expiry as YYMM
         let expiryFormatted = expiry.replace('/', '');
         if (expiryFormatted.length === 4) {
             const mm = expiryFormatted.substring(0, 2);
@@ -203,29 +210,35 @@ app.post('/api/payment/qnb/initiate', async (req, res) => {
         }
 
         const params = {
-            clientid: clientId,
-            terminalid: terminalId,
-            oid: merchant_oid,
-            amount: payment_amount,
-            okUrl: okUrl,
-            failUrl: failUrl,
-            trantype: "Auth",
-            rnd: rnd,
-            hash: hash,
-            currency: "949",
-            lang: "tr",
-            storetype: storeType,
-            pan: pan,
-            Eexp: expiryFormatted,
-            cv2: cv2,
-            email: email,
-            phone: user_phone
+            MbrId: mbrId,
+            MerchantID: clientId,
+            UserCode: clientId,
+            UserPass: merchantPass,
+            SecureType: "3DPay",
+            TxnType: txnType,
+            InstallmentCount: installment,
+            Currency: currency,
+            OkUrl: okUrl,
+            FailUrl: failUrl,
+            OrderId: merchant_oid,
+            PurchAmount: payment_amount,
+            Lang: "TR",
+            Rnd: rnd,
+            Hash: hash,
+            Pan: pan,
+            Expiry: expiryFormatted,
+            Cvv2: cv2
         };
 
-        // Updated Gateway URL
+        // QNB 3D Secure Gateway URL
+        const gatewayUrl = process.env.QNB_GATEWAY_URL || 'https://vpos.qnbfinansbank.com/Gateway/3DHost.aspx';
+
+        console.log('Gateway URL:', gatewayUrl);
+        console.log('Params (masked):', { ...params, UserPass: '***', Hash: '***' });
+
         res.json({
             status: 'success',
-            paymentUrl: 'https://vpos.qnbfinansbank.com/Gateway/Default.aspx',
+            paymentUrl: gatewayUrl,
             params: params
         });
 
