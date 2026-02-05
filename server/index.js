@@ -1,13 +1,16 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import Database from 'better-sqlite3';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import axios from 'axios';
+import crypto from 'crypto';
 
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const Database = require('better-sqlite3');
-const path = require('path');
-const axios = require('axios');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
-const crypto = require('crypto');
 
 const app = express();
 const port = process.env.PORT || 5000;
